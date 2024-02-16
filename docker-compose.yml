@@ -93,7 +93,7 @@ services:
       - devops
 
   grafana-server:
-    image: grafana/grafana-oss:10.2.2
+    image: grafana/grafana-oss:10.3.3
     container_name: grafana-server
     ports:
       - 3000:3000
@@ -235,6 +235,46 @@ services:
       - /dev/disk/:/dev/disk:ro
     devices:
       - /dev/kmsg:/dev/kmsg
+    networks:
+      - devops
+
+
+  mysql-exporter-service:
+    image: prom/mysqld-exporter:v0.15.1
+    container_name: mysql-exporter-service
+    restart: unless-stopped
+    ports:
+      - 9104:9104
+    #volumes:
+    #  - ./mysql-exporter/.my.cnf:/root/.my.cnf
+    environment:
+      #- DATA_SOURCE_NAME="ankat:codeexample9456@(mysql-server:3306)/db"
+      - collect.info_schema.tablestats=true
+      - collect.info_schema.userstats=true
+      - collect.info_schema.tables=true
+      - collect.engine_innodb_status=true
+      - collect.info_schema.query_response_time=true
+      - collect.auto_increment.columns=true
+      - collect.binlog_size=true
+      - collect.perf_schema.eventsstatements=true
+      - collect.perf_schema.eventswaits=true
+      - collect.perf_schema.file_events=true
+      - collect.perf_schema.indexiowaits=true
+      - collect.perf_schema.tableiowaits=true
+      - collect.perf_schema.tablelocks=true
+      - collect.info_schema.processlist=true
+      - collect.info_schema.innodb_metrics=true
+    command:
+      - "--mysqld.username=ankat:codeexample9456"
+      - "--mysqld.address=mysql-server:3306"
+    depends_on:
+      mysql-server:
+        condition: service_healthy
+      prometheus-server:
+        condition: service_healthy
+    links:
+      - mysql-server
+      - prometheus-server
     networks:
       - devops
 
