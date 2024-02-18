@@ -238,7 +238,6 @@ services:
     networks:
       - devops
 
-
   mysql-exporter-service:
     image: prom/mysqld-exporter:v0.15.1
     container_name: mysql-exporter-service
@@ -275,6 +274,20 @@ services:
     links:
       - mysql-server
       - prometheus-server
+    networks:
+      - devops
+
+  zipkin-server:
+    image: openzipkin/zipkin:3.0
+    container_name: zipkin-server
+    restart: unless-stopped
+    ports:
+      - 9411:9411
+    environment:
+      - STORAGE_TYPE=mem
+      - SCRIBE_ENABLED=false
+      - SELF_TRACING_ENABLED=false
+      - JAVA_OPTS=-Dlogging.level.zipkin=DEBUG
     networks:
       - devops
 

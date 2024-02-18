@@ -51,6 +51,38 @@ scrape_configs:
     static_configs:
       - targets: ["node-exporter-service:9100"]
 
+  - job_name: "mysql"
+    static_configs:
+      - targets: ["mysql-exporter-service:9104"]
+
+  - job_name: 'zipkin'
+    metrics_path: '/prometheus'
+    static_configs:
+      - targets: ["zipkin-server:9411"]
+    metric_relabel_configs:
+      # Response code count
+      - source_labels: [__name__]
+        regex: '^status_(\d+)_(.*)$'
+        replacement: '${1}'
+        target_label: status
+      - source_labels: [__name__]
+        regex: '^status_(\d+)_(.*)$'
+        replacement: '${2}'
+        target_label: path
+      - source_labels: [__name__]
+        regex: '^status_(\d+)_(.*)$'
+        replacement: 'http_requests_total'
+        target_label: __name__
+      # Response time, pending histogram from https://github.com/openzipkin/zipkin/pull/1609
+      - source_labels: [__name__]
+        regex: '^response_(.*)$'
+        replacement: '${1}'
+        target_label: path
+      - source_labels: [__name__]
+        regex: '^response_(.*)$'
+        replacement: 'http_request_duration_milliseconds'
+        target_label: __name__
+
   # Create a job for Docker Swarm containers.
   #
   # This example works with cadvisor running using:
